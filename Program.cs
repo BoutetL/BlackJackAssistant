@@ -114,14 +114,18 @@ class HouseEdgeCalculator
             double cardOdds = (double)shoe[i] / total;
             Hand newPlayerHand = new Hand(playerHand);
             newPlayerHand.AddCard(i);
-            houseEdge += cardOdds * CalculateHouseEdgeHitRec(newPlayerHand, dealerHand);
+            houseEdge += cardOdds * CalculateHouseEdgeHitRec(newPlayerHand, dealerHand, 0);
             Console.Write(i + " ");
         }
         return houseEdge;
     }
 
-    private double CalculateHouseEdgeHitRec(Hand playerHand, Hand dealerHand)
+    private double CalculateHouseEdgeHitRec(Hand playerHand, Hand dealerHand, int depth)
     {
+        if (depth > 3)  // Avoid testing unlikely scenarios where player needs 7 cards or more
+        {               // For one of the worst case (player 6, dealer 2), this reduces player edge computation
+            return 0;   // from ~20s to ~2.5s
+        }
         if (playerHand.TooMany())
         {
             return -1;
@@ -134,7 +138,7 @@ class HouseEdgeCalculator
             double cardOdds = (double)shoe[i] / total;
             Hand newPlayerHand = new Hand(playerHand);
             newPlayerHand.AddCard(i);
-            hitHouseEdge += cardOdds * CalculateHouseEdgeHitRec(newPlayerHand, dealerHand);
+            hitHouseEdge += cardOdds * CalculateHouseEdgeHitRec(newPlayerHand, dealerHand, depth + 1);
         }
         return Math.Max(standHouseEdge, hitHouseEdge);
     }
